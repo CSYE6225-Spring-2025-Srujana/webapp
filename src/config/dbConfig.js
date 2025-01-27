@@ -8,13 +8,7 @@ const DATABASE_URL = `postgres://${process.env.DB_USER}:${process.env.DB_PASSWOR
 const sequelize = new Sequelize(DATABASE_URL, {
   dialect: 'postgres',
   logging: false, 
-  timezone: 'UTC',
-  dialectOptions: {
-    useUTC: true,
-    dateStrings: true,
-    typeCast: true,
-    timezone: 'UTC'
-  },
+  timezone: 'UTC'
 });
 
 module.exports = { sequelize };
