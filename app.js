@@ -12,7 +12,13 @@ const app = express();
     await sequelize.authenticate();
     console.log('Connected to the database successfully.');
 
-    await sequelize.sync({ alter: true }); 
+    const dbForceChanges = process.env.DB_FORCE_CHANGES?.toLowerCase() === 'true';
+
+    console.log('DB_FORCE_CHANGES ' , dbForceChanges);
+    await sequelize.sync({   
+      alter: !dbForceChanges, 
+      force: dbForceChanges 
+    }); 
     console.log('Database bootstrapped and synchronized successfully.');
 
   } catch (error) {
@@ -22,23 +28,10 @@ const app = express();
 
 app.use(express.json());
 
-
-//check for method
-app.use((req, res, next) => {
-  if (req.path === '/healthz' && req.method !== 'GET') {
-    return res.status(405).set({
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      Pragma: 'no-cache',
-      'X-Content-Type-Options': 'nosniff',
-    }).end();
-  }
-  next();
-});
-
 app.use('/healthz', healthRoutes);
 
 app.all('*', (req, res) => {
-  res.status(404).set({
+  return res.status(404).set({
     'Cache-Control': 'no-cache, no-store, must-revalidate',
     Pragma: 'no-cache',
     'X-Content-Type-Options': 'nosniff',

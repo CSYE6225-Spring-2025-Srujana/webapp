@@ -8,11 +8,11 @@ const HealthCheck = sequelize.define('healthCheck', {
     autoIncrement: true,
     primaryKey: true,
   },
-  datetime: {
+  dateTime: {
     type: DataTypes.DATE ,
     allowNull: false,
     defaultValue: sequelize.literal("timezone('UTC', now())"),
-  },
+  }
 },
 {
   timestamps: false, // Disable createdAt and updatedAt fields
