@@ -29,7 +29,7 @@ const performHealthCheck = async (req, res) => {
     await sequelize.authenticate();
 
     // Insert a record into the HealthCheck table
-    await HealthCheck.create({ datetime: new Date().toISOString() });
+    await HealthCheck.create();
 
     // Return 200 OK with required headers
     return res

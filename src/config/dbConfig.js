@@ -1,14 +1,12 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
-// Database Connection URL
-const DATABASE_URL = `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
-
 // Initialize Sequelize
-const sequelize = new Sequelize(DATABASE_URL, {
-  dialect: 'postgres',
-  logging: false, 
-  timezone: 'UTC'
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT || 3306,
+  dialect: process.env.DB_DIALECT,
+  logging: false,
 });
 
 module.exports = { sequelize };
