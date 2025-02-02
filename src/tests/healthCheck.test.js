@@ -10,10 +10,15 @@ app.use('/healthz', healthRoutes);
 describe('API Health Check Tests', () => {
   beforeAll(async () => {
     await sequelize.authenticate();
+    await sequelize.sync({ alter: true });
   });
 
   afterAll(async () => {
     await sequelize.close();
+  });
+
+  beforeEach(() => {
+    jest.restoreAllMocks(); // Reset mocks before each test
   });
 
   test('Should return 200 for GET /healthz', async () => {
