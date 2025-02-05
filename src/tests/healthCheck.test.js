@@ -1,33 +1,27 @@
 const request = require('supertest');
-const express = require('express');
-const healthRoutes = require('../routes/healthRoutes');
 const { sequelize } = require('../config/dbConfig');
-
-const app = express();
-app.use(express.json());
-app.use('/healthz', healthRoutes);
+const app = require('../../app.js');
+const HealthCheck = require('../models/healthCheck');
 
 describe('API Health Check Tests', () => {
-  beforeAll(async () => {
-    await sequelize.authenticate();
-    await sequelize.sync({ alter: true });
-  });
-
-  afterAll(async () => {
-    await sequelize.close();
-  });
 
   beforeEach(() => {
     jest.restoreAllMocks(); // Reset mocks before each test
   });
 
   test('Should return 200 for GET /healthz', async () => {
+    jest.spyOn(HealthCheck, 'create').mockResolvedValue();
     const response = await request(app).get('/healthz');
     expect(response.status).toBe(200);
   });
 
   test('Should return 400 for GET /healthz with query parameters', async () => {
     const response = await request(app).get('/healthz?test=123');
+    expect(response.status).toBe(400);
+  });
+
+  test('Should return 400 for GET /healthz with req body', async () => {
+    const response = await request(app).get('/healthz').send({invalid:"data"});
     expect(response.status).toBe(400);
   });
 
@@ -46,10 +40,19 @@ describe('API Health Check Tests', () => {
     expect(response.status).toBe(404);
   });
 
+  test('Should return 404 for an / route', async () => {
+    const response = await request(app).get('/');
+    expect(response.status).toBe(404);
+  });
+
   test('Should return 503 if database connection fails', async () => {
     jest.spyOn(sequelize, 'authenticate').mockRejectedValue(new Error('DB Error'));
     const response = await request(app).get('/healthz');
     expect(response.status).toBe(503);
     sequelize.authenticate.mockRestore();
+  });
+
+  afterAll(async () => {
+    await sequelize.close();
   });
 });

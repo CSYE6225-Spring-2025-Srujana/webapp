@@ -1,7 +1,8 @@
 const { Sequelize } = require('sequelize');
 const dotenv = require('dotenv');
 
-const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
+// const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
+const envFile = '.env';
 console.log(`Loading environment variables from ${envFile}`);
 dotenv.config({ path: envFile });
 

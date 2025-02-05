@@ -28,6 +28,7 @@
     "testEnvironment": "node",
     "roots": [
       "./src/tests"
-    ]
+    ],
+    "forceExit": true
   }
 }
