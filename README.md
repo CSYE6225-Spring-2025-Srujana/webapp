@@ -30,14 +30,15 @@ Navigate to the project directory:
 cd webapp
 ```
 
-### Create a .env file in the root directory of the project
+**Create a .env file in the root directory of the project**
+
 `DB_USER=your_database_user`\
 `DB_PASSWORD=your_database_password`\
 `DB_HOST=localhost`\
-`DB_PORT=5432`\
+`DB_PORT=3306`\
 `DB_NAME=your_database_name`\
 `DB_DIALECT=mysql`\
-`DB_FORCE_CHANGES=false`\
+`DB_FORCE_CHANGES=false`
 
 Fill in the placeholders in the `.env` file template with actual values.
 
@@ -68,7 +69,38 @@ node app.js
 
 
 ### Testing the Health Check API
-You can test the Health Check API using Postman or curl.
+- Use Postman or curl to test the API
+- Run tests: npm test
+- Check coverage: npx jest coverage
+
+## Deploying Application on Cloud
+
+### Launch Ubuntu 24.04 LTS VM on DigitalOcean
+1. Sign in to DigitalOcean
+2. Create a Droplet:
+   - Choose Ubuntu 24.04 LTS
+   - Select appropriate plan and region
+   - Set up SSH keys or password
+   
+### Deploy Application
+1. Transfer files to VM:
+```
+scp /path/to/your/code.zip .env webappSetup.sh root@your_droplet_ip:/tmp
+```
+2. SSH into your VM
+3. Navigate to /tmp and set permissions:
+```
+chmod +x webappSetup.sh
+```
+4. Run the setup script:
+```
+./webappSetup.sh
+```
+5. Start the application:
+```
+cd /opt/csye6225/webapp
+node app.js
+```
 
 ### Successful Request:
 ```
@@ -83,3 +115,4 @@ To stop the application, use Ctrl + C in the terminal where the application is r
 
 ### Additional Notes
 - Ensure your MySQL server is running before starting the application.
+- The webappSetup.sh script automates the setup process on Ubuntu systems

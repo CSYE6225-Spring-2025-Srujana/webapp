@@ -11,12 +11,12 @@ const performHealthCheck = async (req, res) => {
       }).end();  
     }
 
-    const contentLength = req.get('Content-Length');
+    const contentLength = parseInt(req.headers['content-length'] || '0');
     if (
         (contentLength && contentLength !== '0') ||
-        Object.keys(req.body).length > 0 || 
-        Object.keys(req.query).length > 0 ||
-        Object.keys(req.params).length > 0
+        Object.keys(req.body || {}).length > 0 || 
+        Object.keys(req.query || {}).length > 0 ||
+        Object.keys(req.params || {}).length > 0
       ) {
       return res.status(400).set({
         'Cache-Control': 'no-cache, no-store, must-revalidate',

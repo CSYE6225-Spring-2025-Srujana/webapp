@@ -26,8 +26,6 @@ const app = express();
   }
 })();
 
-app.use(express.json());
-
 app.use('/healthz', healthRoutes);
 
 app.all('*', (req, res) => {
@@ -43,3 +41,4 @@ app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
 
+module.exports = app;
