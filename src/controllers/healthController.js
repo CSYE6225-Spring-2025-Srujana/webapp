@@ -32,6 +32,7 @@ const performHealthCheck = async (req, res) => {
     await HealthCheck.create();
 
     // Return 200 OK with required headers
+    console('Added a record')
     return res
       .status(200)
       .set({
