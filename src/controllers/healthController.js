@@ -30,7 +30,7 @@ const performHealthCheck = async (req, res) => {
 
     // Insert a record into the HealthCheck table
     await HealthCheck.create();
-
+    console.log("Created a record")
     // Return 200 OK with required headers
     return res
       .status(200)
