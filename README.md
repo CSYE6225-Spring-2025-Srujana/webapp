@@ -116,3 +116,4 @@ To stop the application, use Ctrl + C in the terminal where the application is r
 ### Additional Notes
 - Ensure your MySQL server is running before starting the application.
 - The webappSetup.sh script automates the setup process on Ubuntu systems
+
