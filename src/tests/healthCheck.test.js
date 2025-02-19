@@ -12,6 +12,7 @@ describe('API Health Check Tests', () => {
   test('Should return 200 for GET /healthz', async () => {
     jest.spyOn(HealthCheck, 'create').mockResolvedValue();
     const response = await request(app).get('/healthz');
+    console.log("response.status got GET ", response.status);
     expect(response.status).toBe(201);
   });
 
