@@ -4,9 +4,14 @@ packer {
       version = ">=1.0.0,<2.0.0"
       source  = "github.com/hashicorp/amazon"
     }
+    googlecompute = {
+      source  = "github.com/hashicorp/googlecompute"
+      version = ">=0.0.1"
+    }
   }
 }
 
+#aws variables
 variable "aws_profile" {
   type    = string
   default = "dev"
@@ -42,6 +47,33 @@ variable "webapp_zip_path" {
   default = "../../Assignment4/webapp.zip"
 }
 
+#gcp vars
+variable "gcp_project_id" {
+  type    = string
+  default = ""
+}
+
+variable "gcp_zone" {
+  type    = string
+  default = "us-central1-a"
+}
+
+variable "gcp_machine_type" {
+  type    = string
+  default = "e2-medium"
+}
+
+variable "gcp_source_image" {
+  type    = string
+  default = "ubuntu-2404-lts" # Ubuntu 24.04 LTS
+}
+
+variable "gcp_service_account" {
+  type    = string
+  default = ""
+}
+
+#db variables
 variable "DB_HOST" {
   type    = string
   default = "localhost"
@@ -90,16 +122,26 @@ source "amazon-ebs" "ubuntu" {
   }
 }
 
+source "googlecompute" "gcp_image" {
+  project_id   = var.gcp_project_id
+  zone         = var.gcp_zone
+  machine_type = var.gcp_machine_type
+  source_image = var.gcp_source_image
+  image_name   = "custom-webapp-image-{{timestamp}}"
+  ssh_username = "ubuntu"
+}
+
 build {
   name = "learn-packer"
   sources = [
-    "source.amazon-ebs.ubuntu",
+    # "source.amazon-ebs.ubuntu",
+    "source.googlecompute.gcp_image",
   ]
 
   provisioner "shell" {
     inline = [
       "sudo apt update",
-      "sudo apt install -y unzip nodejs npm mysql-server",
+      "sudo apt install -y unzip nodejs npm mysql-server nginx",
       "sudo systemctl enable mysql",
       "sudo systemctl start mysql"
     ]

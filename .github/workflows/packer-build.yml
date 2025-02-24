@@ -1,0 +1,36 @@
+name: Build AWS AMI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-ami:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install AWS CLI
+        run: |
+          sudo apt update && sudo apt install -y awscli
+
+      - name: Authenticate with AWS
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set region ${{ secrets.AWS_REGION }}
+
+      - name: Install Packer
+        uses: hashicorp/setup-packer@main
+
+      - name: Build AWS AMI
+        run: |
+          packer init .
+          packer validate .
+          packer build -force machine-image.pkr.hcl

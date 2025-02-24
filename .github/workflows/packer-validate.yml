@@ -1,0 +1,27 @@
+name: Packer PR Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  packer-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Packer
+        uses: hashicorp/setup-packer@main
+
+      - name: Run Packer Format Check
+        run: |
+          packer fmt -check -recursive .
+        continue-on-error: false  # Fail if formatting is incorrect
+
+      - name: Run Packer Validate
+        run: |
+          packer init .
+          packer validate .
