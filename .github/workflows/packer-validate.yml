@@ -25,3 +25,4 @@ jobs:
         run: |
           packer init .
           packer validate .
+        continue-on-error: false
