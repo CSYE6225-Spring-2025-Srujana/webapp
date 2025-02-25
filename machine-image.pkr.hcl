@@ -65,7 +65,7 @@ variable "gcp_machine_type" {
 
 variable "gcp_source_image" {
   type    = string
-  default = "ubuntu-2404-lts" # Ubuntu 24.04 LTS
+  default = "ubuntu-2404-noble-amd64-v20250214" # Ubuntu 24.04 LTS
 }
 
 variable "gcp_service_account" {
@@ -127,14 +127,14 @@ source "googlecompute" "gcp_image" {
   zone         = var.gcp_zone
   machine_type = var.gcp_machine_type
   source_image = var.gcp_source_image
-  image_name   = "custom-webapp-image-{{timestamp}}"
-  ssh_username = "ubuntu"
+  image_name   = "webapp-image-{{timestamp}}"
+  ssh_username = var.ssh_username
 }
 
 build {
   name = "learn-packer"
   sources = [
-    # "source.amazon-ebs.ubuntu",
+    "source.amazon-ebs.ubuntu",
     "source.googlecompute.gcp_image",
   ]
 
@@ -153,16 +153,10 @@ build {
     destination = "/home/ubuntu/webapp.zip"
   }
 
+  # Upload the deploy script
   provisioner "file" {
     source      = "deploy_webapp.sh"
     destination = "/home/ubuntu/deploy_webapp.sh"
-  }
-
-  provisioner "shell" {
-    inline = [
-      "chmod +x /home/ubuntu/deploy_webapp.sh",
-      "bash /home/ubuntu/deploy_webapp.sh"
-    ]
   }
 
   # Upload the database setup script

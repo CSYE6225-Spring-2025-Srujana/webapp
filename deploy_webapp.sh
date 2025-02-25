@@ -33,7 +33,4 @@ echo "Environment variables written to .env file."
 # Run the database setup script
 bash /home/ubuntu/setup_db.sh
 
-# Start the application in the background
-# nohup node app.js &
-
-echo "Web app deployment complete!"
+echo "Web app setup complete!"
