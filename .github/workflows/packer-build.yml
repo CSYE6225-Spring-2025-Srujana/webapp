@@ -1,0 +1,62 @@
+name: Packer Build CI/CD
+
+on:
+  push:
+    branches:
+      - main  # This ensures the workflow only runs when a PR is merged to main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: "1.9.0"
+
+      - name: Zip WebApp
+        run: zip -r webapp.zip . -x "node_modules/*" ".git/*"
+
+      - name: Move WebApp Artifact
+        run: mv webapp.zip $GITHUB_WORKSPACE/webapp.zip
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Set Environment Variables for Packer
+        run: |
+          echo "PKR_VAR_aws_region=${{ vars.AWS_REGION }}" >> $GITHUB_ENV
+          echo "PKR_VAR_instance_type=${{ vars.INSTANCE_TYPE }}" >> $GITHUB_ENV
+          echo "PKR_VAR_ami_name_prefix=${{ vars.AMI_NAME_PREFIX }}" >> $GITHUB_ENV
+          echo "PKR_VAR_source_ami=${{ vars.SOURCE_AMI }}" >> $GITHUB_ENV
+          echo "PKR_VAR_ssh_username=${{ vars.SSH_USERNAME }}" >> $GITHUB_ENV
+          echo "PKR_VAR_DB_HOST=${{ vars.DB_HOST }}" >> $GITHUB_ENV
+          echo "PKR_VAR_DB_USER=${{ vars.DB_USER }}" >> $GITHUB_ENV
+          echo "PKR_VAR_DB_PASSWORD=${{ vars.DB_PASSWORD }}" >> $GITHUB_ENV
+          echo "PKR_VAR_DB_NAME=${{ vars.DB_NAME }}" >> $GITHUB_ENV
+          echo "PKR_VAR_DB_PORT=${{ vars.DB_PORT }}" >> $GITHUB_ENV
+          echo "PKR_VAR_DB_DIALECT=${{ vars.DB_DIALECT }}" >> $GITHUB_ENV
+          echo "PKR_VAR_DB_FORCE_CHANGES=${{ vars.DB_FORCE_CHANGES }}" >> $GITHUB_ENV
+
+      - name: Run Packer Build
+        id: packer-build
+        run: |
+          packer init machine-image.pkr.hcl
+          packer build \
+            -var "aws_region=${{ vars.AWS_REGION }}" \
+            -var "source_ami=${{ vars.SOURCE_AMI }}" \
+            -var "instance_type=${{ vars.INSTANCE_TYPE }}" \
+            -var "ami_name_prefix=${{ vars.AMI_NAME_PREFIX }}" \
+            -var "ssh_username=${{ vars.SSH_USERNAME }}" \
+            machine-image.pkr.hcl
