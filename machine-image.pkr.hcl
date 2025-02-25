@@ -12,6 +12,13 @@ packer {
 }
 
 #aws variables
+
+#for local testing
+# variable "aws_profile" {
+#   type    = string
+#   default = "dev"
+# }
+
 variable "aws_region" {
   type    = string
   default = "us-east-1"
@@ -79,6 +86,7 @@ variable "DB_FORCE_CHANGES" {
 }
 
 source "amazon-ebs" "ubuntu" {
+  #   profile       = var.aws_profile
   ami_name      = "${var.ami_name_prefix}-{{timestamp}}"
   instance_type = var.instance_type
   region        = var.aws_region
