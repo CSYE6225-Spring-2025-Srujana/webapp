@@ -37,6 +37,11 @@ variable "ssh_username" {
   default = "ubuntu"
 }
 
+variable "project_path" {
+  type    = string
+  default = ""
+}
+
 #db variables
 variable "DB_HOST" {
   type    = string
@@ -109,6 +114,11 @@ build {
       "sudo systemctl enable mysql",
       "sudo systemctl start mysql"
     ]
+  }
+
+  provisioner "file" {
+    source      = "${var.project_path}"
+    destination = "/tmp/webapp.zip"
   }
 
   provisioner "file" {
