@@ -111,18 +111,18 @@ build {
   }
 
   # Copy application artifacts
-#   provisioner "file" {
-#     source      = "webapp.zip"
-#     destination = "/home/csye6225/webapp.zip"
-#   }
+  #   provisioner "file" {
+  #     source      = "webapp.zip"
+  #     destination = "/home/csye6225/webapp.zip"
+  #   }
 
   # Set ownership & permissions
-#   provisioner "shell" {
-#     inline = [
-#       "sudo chown -R csye6225:csye6225 /home/csye6225",
-#       "sudo chmod -R 750 /home/csye6225"
-#     ]
-#   }
+  #   provisioner "shell" {
+  #     inline = [
+  #       "sudo chown -R csye6225:csye6225 /home/csye6225",
+  #       "sudo chmod -R 750 /home/csye6225"
+  #     ]
+  #   }
 
   # Deploy WebApp
   provisioner "file" {
