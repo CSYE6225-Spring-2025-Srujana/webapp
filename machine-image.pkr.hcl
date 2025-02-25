@@ -135,8 +135,10 @@ build {
   provisioner "shell" {
     inline = [
       "sudo mv /tmp/deploy_webapp.sh /opt/csye6225/deploy_webapp.sh",
+      "sudo chown csye6225:csye6225 /opt/csye6225/deploy_webapp.sh",
       "sudo chmod 755 /opt/csye6225/deploy_webapp.sh",
       "sudo mv /tmp/setup_db.sh /opt/csye6225/setup_db.sh",
+      "sudo chown csye6225:csye6225 /opt/csye6225/setup_db.sh",
       "sudo chmod 755 /opt/csye6225/setup_db.sh"
     ]
   }
