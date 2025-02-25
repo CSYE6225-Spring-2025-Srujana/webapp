@@ -24,9 +24,6 @@ jobs:
       - name: Zip WebApp
         run: zip -r webapp.zip . -x "node_modules/*" ".git/*"
 
-      - name: Move WebApp Artifact
-        run: mv webapp.zip $GITHUB_WORKSPACE/webapp.zip
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
