@@ -9,19 +9,51 @@ sudo mkdir -p /opt/csye6225
 # Navigate to home directory
 cd /opt/csye6225
 
-# Move the webapp.zip from GitHub workspace to the home directory
-echo "Moving webapp.zip from GitHub workspace to /opt/csye6225"
-sudo mv $GITHUB_WORKSPACE/webapp.zip /opt/csye6225/webapp.zip
+echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+echo "Current directory: $(pwd)"
+
+if [ -n "${GITHUB_WORKSPACE}" ]; then
+    echo "GITHUB_WORKSPACE is set to: ${GITHUB_WORKSPACE}"
+    if [ -d "${GITHUB_WORKSPACE}" ]; then
+        echo "The directory ${GITHUB_WORKSPACE} exists"
+        ls -la "${GITHUB_WORKSPACE}"
+    else
+        echo "The directory ${GITHUB_WORKSPACE} does not exist"
+    fi
+else
+    echo "GITHUB_WORKSPACE is not set"
+fi
+
+# Move the webapp.zip from /tmp to the home directory
+echo "Moving webapp.zip from /tmp to /opt/csye6225"
+sudo mv /tmp/webapp.zip /opt/csye6225/webapp.zip
 
 # Unzip the web application
-sudo unzip -o webapp.zip -d webapp
-sudo rm webapp.zip  # Clean up zip file
+if [ -f "/opt/csye6225/webapp.zip" ]; then
+  # Unzip the web application
+  sudo unzip -o /opt/csye6225/webapp.zip -d /opt/csye6225/webapp
+  sudo rm /opt/csye6225/webapp.zip  # Clean up zip file
+else
+  echo "Error: webapp.zip not found in /opt/csye6225"
+  exit 1
+fi
+
 
 # Navigate to the webapp folder
-cd /opt/csye6225/webapp
+if [ -d "/opt/csye6225/webapp" ]; then
+  cd /opt/csye6225/webapp
+else
+  echo "Error: /opt/csye6225/webapp directory not found"
+  exit 1
+fi
 
 # Install dependencies
-sudo npm install --silent
+if command -v npm &> /dev/null; then
+  sudo npm install --silent
+else
+  echo "Error: npm is not installed"
+  exit 1
+fi
 
 # Create the .env file properly
 cat <<EOF | sudo tee /opt/csye6225/webapp/.env > /dev/null
