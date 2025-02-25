@@ -72,7 +72,7 @@ sudo chmod 600 /opt/csye6225/webapp/.env
 
 # Verify permissions
 echo "Permissions set:"
-ls -ld /opt/csye6225/webapp
+ls -al /opt/csye6225/webapp
 ls -l /opt/csye6225/webapp/.env
 
 # Restart the application service if it exists
