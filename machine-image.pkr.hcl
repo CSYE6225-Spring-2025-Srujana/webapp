@@ -96,11 +96,12 @@ build {
     inline = [
       "sudo groupadd -r csye6225",
       "sudo useradd -r -g csye6225 -s /usr/sbin/nologin csye6225",
-      "sudo mkdir -p /home/csye6225",
-      "sudo chown -R csye6225:csye6225 /home/csye6225",
-      "sudo chmod -R 750 /home/csye6225"
+      "sudo mkdir -p /opt/csye6225",
+      "sudo chown -R csye6225:csye6225 /opt/csye6225",
+      "sudo chmod -R 755 /opt/csye6225"
     ]
   }
+
   provisioner "shell" {
     inline = [
       "sudo apt update",
@@ -110,30 +111,32 @@ build {
     ]
   }
 
-  # Copy application artifacts
-  #   provisioner "file" {
-  #     source      = "webapp.zip"
-  #     destination = "/home/csye6225/webapp.zip"
-  #   }
-
-  # Set ownership & permissions
-  #   provisioner "shell" {
-  #     inline = [
-  #       "sudo chown -R csye6225:csye6225 /home/csye6225",
-  #       "sudo chmod -R 750 /home/csye6225"
-  #     ]
-  #   }
-
-  # Deploy WebApp
   provisioner "file" {
     source      = "deploy_webapp.sh"
-    destination = "/home/csye6225/deploy_webapp.sh"
+    destination = "/tmp/deploy_webapp.sh"
+  }
+
+  provisioner "shell" {
+    inline = [
+      "sudo mv /tmp/deploy_webapp.sh /opt/csye6225/deploy_webapp.sh",
+      "sudo chown csye6225:csye6225 /opt/csye6225/deploy_webapp.sh",
+      "sudo chmod 755 /opt/csye6225/deploy_webapp.sh"
+    ]
   }
 
   provisioner "file" {
     source      = "setup_db.sh"
-    destination = "/home/csye6225/setup_db.sh"
+    destination = "/tmp/setup_db.sh"
   }
+
+  provisioner "shell" {
+    inline = [
+      "sudo mv /tmp/setup_db.sh /opt/csye6225/setup_db.sh",
+      "sudo chown csye6225:csye6225 /opt/csye6225/setup_db.sh",
+      "sudo chmod 755 /opt/csye6225/setup_db.sh"
+    ]
+  }
+
 
   provisioner "shell" {
     inline = [
@@ -144,9 +147,8 @@ build {
       "export DB_PORT='${var.DB_PORT}'",
       "export DB_DIALECT='${var.DB_DIALECT}'",
       "export DB_FORCE_CHANGES='${var.DB_FORCE_CHANGES}'",
-      "sudo chmod +x /home/csye6225/*.sh",
-      "sudo bash /home/csye6225/setup_db.sh",
-      "sudo bash /home/csye6225/deploy_webapp.sh"
+      "sudo -E bash /opt/csye6225/setup_db.sh",
+      "sudo -E bash /opt/csye6225/deploy_webapp.sh"
     ]
   }
 

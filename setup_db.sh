@@ -3,19 +3,21 @@ set -e  # Exit immediately if any command fails
 
 echo "Setting up MySQL database..."
 
-# Load environment variables
-# if [ -f /home/csye6225/webapp/.env ]; then
-#   export $(grep -v '^#' /home/csye6225/webapp/.env | xargs)
-# else
-#   echo "Error: .env file not found!"
-#   exit 1
-# fi
-
-# Ensure MySQL is running
-if ! systemctl is-active --quiet mysql; then
-  echo "Error: MySQL is not running!"
-  exit 1
+DB_ENGINE="mysql-server"
+if ! dpkg -l | grep -q "$DB_ENGINE"; then
+  echo "Installing $DB_ENGINE..."
+  sudo apt install -y $DB_ENGINE || { echo "Failed to install $DB_ENGINE"; exit 1; }
+else
+  echo "$DB_ENGINE is already installed."
 fi
+
+if ! systemctl is-active --quiet mysql; then
+  echo "MySQL is not running. Attempting to start..."
+  sudo systemctl start mysql || { echo "Failed to start MySQL"; exit 1; }
+fi
+
+echo "MySQL is running."
+
 
 # Login as root and execute MySQL commands
 sudo mysql -e "
