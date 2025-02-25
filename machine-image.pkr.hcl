@@ -126,23 +126,17 @@ build {
     destination = "/tmp/deploy_webapp.sh"
   }
 
-  provisioner "shell" {
-    inline = [
-      "sudo mv /tmp/deploy_webapp.sh /opt/csye6225/deploy_webapp.sh",
-      "sudo chown csye6225:csye6225 /opt/csye6225/deploy_webapp.sh",
-      "sudo chmod 755 /opt/csye6225/deploy_webapp.sh"
-    ]
-  }
-
   provisioner "file" {
     source      = "setup_db.sh"
     destination = "/tmp/setup_db.sh"
   }
 
+  # Move and set permissions for scripts
   provisioner "shell" {
     inline = [
+      "sudo mv /tmp/deploy_webapp.sh /opt/csye6225/deploy_webapp.sh",
+      "sudo chmod 755 /opt/csye6225/deploy_webapp.sh",
       "sudo mv /tmp/setup_db.sh /opt/csye6225/setup_db.sh",
-      "sudo chown csye6225:csye6225 /opt/csye6225/setup_db.sh",
       "sudo chmod 755 /opt/csye6225/setup_db.sh"
     ]
   }
@@ -162,14 +156,16 @@ build {
     ]
   }
 
-  # Add Systemd Service
   provisioner "file" {
     source      = "webapp.service"
-    destination = "/etc/systemd/system/webapp.service"
+    destination = "/tmp/webapp.service"
   }
 
   provisioner "shell" {
     inline = [
+      "echo 'Moving webapp.service to /etc/systemd/system/'",
+      "sudo mv /tmp/webapp.service /etc/systemd/system/webapp.service",
+      "sudo chmod 644 /etc/systemd/system/webapp.service",
       "sudo systemctl daemon-reload",
       "sudo systemctl enable webapp.service"
     ]
