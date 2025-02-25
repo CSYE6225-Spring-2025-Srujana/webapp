@@ -1,13 +1,17 @@
 [Unit]
-Description=Web Application
+Description=Web Application Service
 After=network.target
 
 [Service]
+ExecStart=/usr/bin/node /home/csye6225/webapp/app.js
+WorkingDirectory=/home/csye6225/webapp
+Restart=always
+RestartSec=5s
 User=csye6225
 Group=csye6225
-WorkingDirectory=/home/csye6225/webapp
-ExecStart=/usr/bin/node /home/csye6225/webapp/app.js
-Restart=always
+EnvironmentFile=/home/csye6225/webapp/.env
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target

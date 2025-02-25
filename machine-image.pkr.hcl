@@ -12,11 +12,6 @@ packer {
 }
 
 #aws variables
-variable "aws_profile" {
-  type    = string
-  default = "dev"
-}
-
 variable "aws_region" {
   type    = string
   default = "us-east-1"
@@ -42,37 +37,6 @@ variable "ssh_username" {
   default = "ubuntu"
 }
 
-variable "webapp_zip_path" {
-  type    = string
-  default = "../../Assignment4/webapp.zip"
-}
-
-#gcp vars
-variable "gcp_project_id" {
-  type    = string
-  default = ""
-}
-
-variable "gcp_zone" {
-  type    = string
-  default = "us-central1-a"
-}
-
-variable "gcp_machine_type" {
-  type    = string
-  default = "e2-medium"
-}
-
-variable "gcp_source_image" {
-  type    = string
-  default = "ubuntu-2404-noble-amd64-v20250214" # Ubuntu 24.04 LTS
-}
-
-variable "gcp_service_account" {
-  type    = string
-  default = ""
-}
-
 #db variables
 variable "DB_HOST" {
   type    = string
@@ -86,7 +50,7 @@ variable "DB_USER" {
 
 variable "DB_PASSWORD" {
   type    = string
-  default = "mysql"
+  default = ""
 }
 
 variable "DB_NAME" {
@@ -110,7 +74,6 @@ variable "DB_FORCE_CHANGES" {
 }
 
 source "amazon-ebs" "ubuntu" {
-  profile       = var.aws_profile
   ami_name      = "${var.ami_name_prefix}-{{timestamp}}"
   instance_type = var.instance_type
   region        = var.aws_region
@@ -122,61 +85,81 @@ source "amazon-ebs" "ubuntu" {
   }
 }
 
-source "googlecompute" "gcp_image" {
-  project_id   = var.gcp_project_id
-  zone         = var.gcp_zone
-  machine_type = var.gcp_machine_type
-  source_image = var.gcp_source_image
-  image_name   = "webapp-image-{{timestamp}}"
-  ssh_username = var.ssh_username
-}
-
 build {
   name = "learn-packer"
   sources = [
     "source.amazon-ebs.ubuntu",
-    "source.googlecompute.gcp_image",
+    #"source.googlecompute.gcp_image",
   ]
 
   provisioner "shell" {
     inline = [
+      "sudo groupadd -r csye6225",
+      "sudo useradd -r -g csye6225 -s /usr/sbin/nologin csye6225",
+      "sudo mkdir -p /home/csye6225",
+      "sudo chown -R csye6225:csye6225 /home/csye6225",
+      "sudo chmod -R 750 /home/csye6225"
+    ]
+  }
+  provisioner "shell" {
+    inline = [
       "sudo apt update",
-      "sudo apt install -y unzip nodejs npm mysql-server nginx",
+      "sudo apt install -y unzip nodejs npm mysql-server",
       "sudo systemctl enable mysql",
       "sudo systemctl start mysql"
     ]
   }
 
-  # Upload the zipped web application
-  provisioner "file" {
-    source      = var.webapp_zip_path
-    destination = "/home/ubuntu/webapp.zip"
-  }
+  # Copy application artifacts
+#   provisioner "file" {
+#     source      = "webapp.zip"
+#     destination = "/home/csye6225/webapp.zip"
+#   }
 
-  # Upload the deploy script
+  # Set ownership & permissions
+#   provisioner "shell" {
+#     inline = [
+#       "sudo chown -R csye6225:csye6225 /home/csye6225",
+#       "sudo chmod -R 750 /home/csye6225"
+#     ]
+#   }
+
+  # Deploy WebApp
   provisioner "file" {
     source      = "deploy_webapp.sh"
-    destination = "/home/ubuntu/deploy_webapp.sh"
+    destination = "/home/csye6225/deploy_webapp.sh"
   }
 
-  # Upload the database setup script
   provisioner "file" {
     source      = "setup_db.sh"
-    destination = "/home/ubuntu/setup_db.sh"
+    destination = "/home/csye6225/setup_db.sh"
   }
 
   provisioner "shell" {
-    environment_vars = [
-      "DB_HOST=${var.DB_HOST}",
-      "DB_USER=${var.DB_USER}",
-      "DB_PASSWORD=${var.DB_PASSWORD}",
-      "DB_NAME=${var.DB_NAME}",
-      "DB_PORT=${var.DB_PORT}",
-      "DB_DIALECT=${var.DB_DIALECT}"
-    ]
     inline = [
-      "chmod +x /home/ubuntu/deploy_webapp.sh",
-      "bash /home/ubuntu/deploy_webapp.sh"
+      "export DB_HOST='${var.DB_HOST}'",
+      "export DB_USER='${var.DB_USER}'",
+      "export DB_PASSWORD='${var.DB_PASSWORD}'",
+      "export DB_NAME='${var.DB_NAME}'",
+      "export DB_PORT='${var.DB_PORT}'",
+      "export DB_DIALECT='${var.DB_DIALECT}'",
+      "export DB_FORCE_CHANGES='${var.DB_FORCE_CHANGES}'",
+      "sudo chmod +x /home/csye6225/*.sh",
+      "sudo bash /home/csye6225/setup_db.sh",
+      "sudo bash /home/csye6225/deploy_webapp.sh"
+    ]
+  }
+
+  # Add Systemd Service
+  provisioner "file" {
+    source      = "webapp.service"
+    destination = "/etc/systemd/system/webapp.service"
+  }
+
+  provisioner "shell" {
+    inline = [
+      "sudo systemctl daemon-reload",
+      "sudo systemctl enable webapp.service"
     ]
   }
 
