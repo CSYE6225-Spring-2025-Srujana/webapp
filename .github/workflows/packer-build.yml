@@ -54,11 +54,32 @@ jobs:
         id: packer-build
         run: |
           packer init machine-image.pkr.hcl
-          packer build \
+          
+          AMI_OUTPUT=$(packer build -machine-readable \
             -var "aws_region=${{ vars.AWS_REGION }}" \
             -var "source_ami=${{ vars.SOURCE_AMI }}" \
             -var "instance_type=${{ vars.INSTANCE_TYPE }}" \
             -var "ami_name_prefix=${{ vars.AMI_NAME_PREFIX }}" \
             -var "project_path=${{ vars.PROJECT_PATH }}" \
             -var "ssh_username=${{ vars.SSH_USERNAME }}" \
-            machine-image.pkr.hcl
+            machine-image.pkr.hcl | tee output.log | grep 'artifact,0,id')
+
+          echo "Full AMI Output: $AMI_OUTPUT"
+
+          AMI_ID=$(echo "$AMI_OUTPUT" | cut -d ',' -f6 | cut -d ':' -f2)
+          echo "Extracted AMI ID: $AMI_ID"
+
+          echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
+
+      - name: Store AMI ID in AWS SSM Parameter Store
+        run: |
+          if [[ -z "$AMI_ID" ]]; then
+            echo "Error: AMI_ID is empty. Exiting..."
+            exit 1
+          fi
+
+          aws ssm put-parameter --name "/custom-ami/latest" \
+            --type "String" \
+            --value "$AMI_ID" \
+            --region ${{ vars.AWS_REGION }} \
+            --overwrite
