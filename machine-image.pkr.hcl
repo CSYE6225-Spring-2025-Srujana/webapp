@@ -216,7 +216,7 @@ source "googlecompute" "gcp_image" {
 build {
   name = "learn-packer"
   sources = [
-    #"source.amazon-ebs.ubuntu",
+    "source.amazon-ebs.ubuntu",
     "source.googlecompute.gcp_image",
   ]
 
