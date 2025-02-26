@@ -34,20 +34,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - id: 'auth'
-        uses: google-github-actions/auth@v0.4.0
-        with:
-          credentials_json: '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'
-
+       # Install Google Cloud SDK
       - name: Install Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          export_default_credentials: true
 
+      # Set up service account key from GitHub secret
+      - name: Set up GCP Service Account
+        run: echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > "${HOME}/gcp-service-account.json"
+
+      # Authenticate with Google Cloud using the service account
       - name: Authenticate with GCP
-        run: gcloud auth activate-service-account --key-file=${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+        run: gcloud auth activate-service-account --key-file="${HOME}/gcp-service-account.json"
 
       - name: Generate Packer Variables File
         run: |
