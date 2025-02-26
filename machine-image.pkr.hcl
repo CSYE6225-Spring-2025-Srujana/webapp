@@ -58,24 +58,9 @@ variable "aws_subnet" {
   default = "t2.micro"
 }
 
-variable "aws_sg" {
-  type    = string
-  default = "t2.micro"
-}
-
 variable "aws_ami_users" {
   type    = list(string)
   default = ["794038250804", "796973511897"]
-}
-
-variable "aws_polling_delay_seconds" {
-  type    = number
-  default = 120
-}
-
-variable "aws_polling_max_attempts" {
-  type    = number
-  default = 3
 }
 
 variable "aws_device_name" {
@@ -182,20 +167,15 @@ source "amazon-ebs" "ubuntu" {
   tags = {
     Name = "My-WebApp-AMI"
   }
-  #   aws_polling {
-  #     delay_seconds = var.aws_polling_delay_seconds
-  #     max_attempts  = var.aws_polling_max_attempts
-  #   }
   launch_block_device_mappings {
     device_name           = var.aws_device_name
     volume_size           = var.aws_volume_size
     volume_type           = var.aws_volume_type
     delete_on_termination = var.aws_delete_on_termination
   }
-  # Use the default VPC subnet and security group
-  #   vpc_id             = var.aws_vpc
-  #   subnet_id          = var.aws_subnet
-  #   security_group_ids = [var.aws_sg]
+  # Use the default VPC subnet
+  vpc_id    = var.aws_vpc
+  subnet_id = var.aws_subnet
 }
 
 source "googlecompute" "gcp_image" {
