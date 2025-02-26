@@ -74,11 +74,11 @@ jobs:
           DB_FORCE_CHANGES = "${{ vars.DB_FORCE_CHANGES }}"
 
           # GCP Variables
-          GCP_PROJECT_ID   = "${{ vars.GCP_PROJECT_ID }}"
-          GCP_SOURCE_IMAGE = "${{ vars.GCP_SOURCE_IMAGE }}"
-          GCP_MACHINE_TYPE = "${{ vars.GCP_MACHINE_TYPE }}"
-          GCP_ZONE         = "${{ vars.GCP_ZONE }}"
-          GCP_IMAGE_PREFIX = "${{ vars.GCP_IMAGE_PREFIX }}"
+          gcp_project_id   = "${{ vars.GCP_PROJECT_ID }}"
+          gcp_source_image = "${{ vars.GCP_SOURCE_IMAGE }}"
+          gcp_machine_type = "${{ vars.GCP_MACHINE_TYPE }}"
+          gcp_zone         = "${{ vars.GCP_ZONE }}"
+          gcp_image_prefix = "${{ vars.GCP_IMAGE_PREFIX }}"
           EOF
 
       - name: Run Packer Build
