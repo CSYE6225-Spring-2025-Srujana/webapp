@@ -17,7 +17,8 @@ variable "project_path" {
 }
 
 variable "ssh_username" {
-  type = string
+  type    = string
+  default = "t2.micro"
 }
 
 # AWS Variables
@@ -43,19 +44,23 @@ variable "instance_type" {
 }
 
 variable "source_ami" {
-  type = string
+  type    = string
+  default = "t2.micro"
 }
 
 variable "aws_vpc" {
-  type = string
+  type    = string
+  default = "t2.micro"
 }
 
 variable "aws_subnet" {
-  type = string
+  type    = string
+  default = "t2.micro"
 }
 
 variable "aws_sg" {
-  type = string
+  type    = string
+  default = "t2.micro"
 }
 
 variable "aws_ami_users" {
@@ -95,11 +100,13 @@ variable "aws_delete_on_termination" {
 
 # GCP Variables
 variable "gcp_project_id" {
-  type = string
+  type    = string
+  default = "t2.micro"
 }
 
 variable "gcp_source_image" {
-  type = string
+  type    = string
+  default = "t2.micro"
 }
 
 variable "gcp_machine_type" {
