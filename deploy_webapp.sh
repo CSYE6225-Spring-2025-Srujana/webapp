@@ -1,12 +1,10 @@
 #!/bin/bash
-set -e  # Exit immediately if any command fails
+set -e  
 
 echo "Starting webapp deployment..."
 
-# Ensure the target directory exists
 sudo mkdir -p /opt/csye6225
 
-# Navigate to the deployment directory
 cd /opt/csye6225
 
 # Check if webapp.zip exists in /tmp before moving
