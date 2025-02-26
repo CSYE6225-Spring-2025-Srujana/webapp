@@ -39,14 +39,15 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
-
-      # Set up service account key from GitHub secret
-      - name: Set up GCP Service Account
-        run: echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > "${HOME}/gcp-service-account.json"
-
+          
       # Authenticate with Google Cloud using the service account
       - name: Authenticate with GCP
-        run: gcloud auth activate-service-account --key-file="${HOME}/gcp-service-account.json"
+        uses : google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'
+
+      - name: Verify Authentication
+        run: gcloud auth list
 
       - name: Generate Packer Variables File
         run: |
