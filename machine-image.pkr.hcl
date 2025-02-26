@@ -101,12 +101,12 @@ variable "aws_delete_on_termination" {
 # GCP Variables
 variable "gcp_project_id" {
   type    = string
-  default = "t2.micro"
+  default = "branded-coder-451905-s9"
 }
 
 variable "gcp_source_image" {
   type    = string
-  default = "t2.micro"
+  default = "ubuntu-2404-noble-amd64-v20250214"
 }
 
 variable "gcp_machine_type" {
