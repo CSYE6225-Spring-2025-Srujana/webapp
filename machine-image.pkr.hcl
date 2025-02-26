@@ -11,13 +11,21 @@ packer {
   }
 }
 
-#aws variables
+variable "project_path" {
+  type    = string
+  default = ""
+}
 
+variable "ssh_username" {
+  type = string
+}
+
+# AWS Variables
 #for local testing
-# variable "aws_profile" {
-#   type    = string
-#   default = "dev"
-# }
+variable "aws_profile" {
+  type    = string
+  default = "dev"
+}
 
 variable "aws_region" {
   type    = string
@@ -35,18 +43,88 @@ variable "instance_type" {
 }
 
 variable "source_ami" {
-  type    = string
-  default = "ami-04b4f1a9cf54c11d0"
+  type = string
 }
 
-variable "ssh_username" {
-  type    = string
-  default = "ubuntu"
+variable "aws_vpc" {
+  type = string
 }
 
-variable "project_path" {
+variable "aws_subnet" {
+  type = string
+}
+
+variable "aws_sg" {
+  type = string
+}
+
+variable "aws_ami_users" {
+  type    = list(string)
+  default = ["794038250804", "796973511897"]
+}
+
+variable "aws_polling_delay_seconds" {
+  type    = number
+  default = 120
+}
+
+variable "aws_polling_max_attempts" {
+  type    = number
+  default = 3
+}
+
+variable "aws_device_name" {
   type    = string
-  default = ""
+  default = "/dev/sda1"
+}
+
+variable "aws_volume_size" {
+  type    = number
+  default = 20
+}
+
+variable "aws_volume_type" {
+  type    = string
+  default = "gp2"
+}
+
+variable "aws_delete_on_termination" {
+  type    = bool
+  default = true
+}
+
+# GCP Variables
+variable "gcp_project_id" {
+  type = string
+}
+
+variable "gcp_source_image" {
+  type = string
+}
+
+variable "gcp_machine_type" {
+  type    = string
+  default = "e2-medium"
+}
+
+variable "gcp_zone" {
+  type    = string
+  default = "us-central1-a"
+}
+
+variable "gcp_image_prefix" {
+  type    = string
+  default = "webapp-gcp"
+}
+
+variable "gcp_storage" {
+  type    = number
+  default = 25
+}
+
+variable "gcp_disk_type" {
+  type    = string
+  default = "pd-balanced"
 }
 
 #db variables
@@ -86,23 +164,53 @@ variable "DB_FORCE_CHANGES" {
 }
 
 source "amazon-ebs" "ubuntu" {
-  #   profile       = var.aws_profile
-  ami_name      = "${var.ami_name_prefix}-{{timestamp}}"
-  instance_type = var.instance_type
+  profile       = var.aws_profile
   region        = var.aws_region
+  ami_name      = "${var.ami_name_prefix}-{{timestamp}}"
+  ami_users     = var.aws_ami_users
+  instance_type = var.instance_type
   source_ami    = var.source_ami
   ssh_username  = var.ssh_username
-  ami_groups    = [] # Keep the AMI private
+  ami_groups    = []
   tags = {
     Name = "My-WebApp-AMI"
   }
+  #   aws_polling {
+  #     delay_seconds = var.aws_polling_delay_seconds
+  #     max_attempts  = var.aws_polling_max_attempts
+  #   }
+  launch_block_device_mappings {
+    device_name           = var.aws_device_name
+    volume_size           = var.aws_volume_size
+    volume_type           = var.aws_volume_type
+    delete_on_termination = var.aws_delete_on_termination
+  }
+  # Use the default VPC subnet and security group
+  #   vpc_id             = var.aws_vpc
+  #   subnet_id          = var.aws_subnet
+  #   security_group_ids = [var.aws_sg]
 }
+
+source "googlecompute" "gcp_image" {
+  project_id   = var.gcp_project_id
+  source_image = var.gcp_source_image
+  machine_type = var.gcp_machine_type
+  zone         = var.gcp_zone
+  image_name   = "${var.gcp_image_prefix}-{{timestamp}}"
+  ssh_username = var.ssh_username
+  image_labels = {
+    created_by = "packer"
+  }
+  disk_size = var.gcp_storage
+  disk_type = var.gcp_disk_type
+}
+
 
 build {
   name = "learn-packer"
   sources = [
-    "source.amazon-ebs.ubuntu",
-    #"source.googlecompute.gcp_image",
+    #"source.amazon-ebs.ubuntu",
+    "source.googlecompute.gcp_image",
   ]
 
   provisioner "shell" {

@@ -34,38 +34,54 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Set Environment Variables for Packer
+      - name: Install Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: Authenticate with GCP
+        run: gcloud auth activate-service-account --key-file=${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Generate Packer Variables File
         run: |
-          echo "PKR_VAR_aws_region=${{ vars.AWS_REGION }}" >> $GITHUB_ENV
-          echo "PKR_VAR_instance_type=${{ vars.INSTANCE_TYPE }}" >> $GITHUB_ENV
-          echo "PKR_VAR_ami_name_prefix=${{ vars.AMI_NAME_PREFIX }}" >> $GITHUB_ENV
-          echo "PKR_VAR_source_ami=${{ vars.SOURCE_AMI }}" >> $GITHUB_ENV
-          echo "PKR_VAR_ssh_username=${{ vars.SSH_USERNAME }}" >> $GITHUB_ENV
-          echo "PKR_VAR_project_path=${{ vars.PROJECT_PATH }}" >> $GITHUB_ENV
-          echo "PKR_VAR_DB_HOST=${{ vars.DB_HOST }}" >> $GITHUB_ENV
-          echo "PKR_VAR_DB_USER=${{ vars.DB_USER }}" >> $GITHUB_ENV
-          echo "PKR_VAR_DB_PASSWORD=${{ vars.DB_PASSWORD }}" >> $GITHUB_ENV
-          echo "PKR_VAR_DB_NAME=${{ vars.DB_NAME }}" >> $GITHUB_ENV
-          echo "PKR_VAR_DB_PORT=${{ vars.DB_PORT }}" >> $GITHUB_ENV
-          echo "PKR_VAR_DB_DIALECT=${{ vars.DB_DIALECT }}" >> $GITHUB_ENV
-          echo "PKR_VAR_DB_FORCE_CHANGES=${{ vars.DB_FORCE_CHANGES }}" >> $GITHUB_ENV
+          cat <<EOF > packer.auto.pkrvars.hcl
+          ssh_username      = "${{ vars.SSH_USERNAME }}"
+          project_path      = "${{ vars.PROJECT_PATH }}"
+
+          #AWS variables
+          aws_region        = "${{ vars.AWS_REGION }}"
+          instance_type     = "${{ vars.INSTANCE_TYPE }}"
+          ami_name_prefix   = "${{ vars.AMI_NAME_PREFIX }}"
+          source_ami        = "${{ vars.SOURCE_AMI }}"
+          aws_vpc           = "${{ vars.AWS_VPC }}"
+          aws_subnet        = "${{ vars.AWS_SUBNET }}"
+          aws_sg            = "${{ vars.AWS_SG }}"
+
+          # Database Variables
+          DB_HOST          = "${{ vars.DB_HOST }}"
+          DB_USER          = "${{ vars.DB_USER }}"
+          DB_PASSWORD      = "${{ secrets.DB_PASSWORD }}"
+          DB_NAME          = "${{ vars.DB_NAME }}"
+          DB_PORT          = "${{ vars.DB_PORT }}"
+          DB_DIALECT       = "${{ vars.DB_DIALECT }}"
+          DB_FORCE_CHANGES = "${{ vars.DB_FORCE_CHANGES }}"
+
+          # GCP Variables
+          GCP_PROJECT_ID   = "${{ vars.GCP_PROJECT_ID }}"
+          GCP_SOURCE_IMAGE = "${{ vars.GCP_SOURCE_IMAGE }}"
+          GCP_MACHINE_TYPE = "${{ vars.GCP_MACHINE_TYPE }}"
+          GCP_ZONE         = "${{ vars.GCP_ZONE }}"
+          GCP_IMAGE_PREFIX = "${{ vars.GCP_IMAGE_PREFIX }}"
+          EOF
 
       - name: Run Packer Build
         id: packer-build
         run: |
           packer init machine-image.pkr.hcl
-          
-          AMI_OUTPUT=$(packer build -machine-readable \
-            -var "aws_region=${{ vars.AWS_REGION }}" \
-            -var "source_ami=${{ vars.SOURCE_AMI }}" \
-            -var "instance_type=${{ vars.INSTANCE_TYPE }}" \
-            -var "ami_name_prefix=${{ vars.AMI_NAME_PREFIX }}" \
-            -var "project_path=${{ vars.PROJECT_PATH }}" \
-            -var "ssh_username=${{ vars.SSH_USERNAME }}" \
-            machine-image.pkr.hcl | tee output.log | grep 'artifact,0,id')
+          AMI_OUTPUT=$(packer build -machine-readable -var-file=packer.auto.pkrvars.hcl machine-image.pkr.hcl | tee output.log | grep 'artifact,0,id')
 
           echo "Full AMI Output: $AMI_OUTPUT"
-
           AMI_ID=$(echo "$AMI_OUTPUT" | cut -d ',' -f6 | cut -d ':' -f2)
           echo "Extracted AMI ID: $AMI_ID"
 
