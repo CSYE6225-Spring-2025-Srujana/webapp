@@ -127,6 +127,7 @@ jobs:
           gcp_machine_type = "${{ vars.GCP_MACHINE_TYPE }}"
           gcp_zone         = "${{ vars.GCP_ZONE }}"
           gcp_image_prefix = "${{ vars.GCP_IMAGE_PREFIX }}"
+          gcp_demo_project = "${{ vars.GCP_DEMO_PROJECT }}"
           EOF
 
       - name: Run Packer Build

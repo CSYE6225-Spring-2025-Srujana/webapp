@@ -119,6 +119,11 @@ variable "gcp_disk_type" {
   default = "pd-balanced"
 }
 
+variable "gcp_demo_project" {
+  type    = string
+  default = "vast-collective-452106-k3"
+}
+
 #db variables
 variable "DB_HOST" {
   type    = string
@@ -273,6 +278,17 @@ build {
       "sudo chmod 644 /etc/systemd/system/webapp.service",
       "sudo systemctl daemon-reload",
       "sudo systemctl enable webapp.service"
+    ]
+  }
+
+  post-processor "shell-local" {
+    only = ["source.googlecompute.gcp_image"]
+    inline = [
+      "echo 'Fetching the latest created image...'",
+      "IMAGE_NAME=$(gcloud compute images list --filter='name~${var.gcp_image_prefix}-.*' --sort-by=~creationTimestamp --limit=1 --format='value(name)')",
+      "if [[ -z \"$IMAGE_NAME\" ]]; then echo 'No image found!'; exit 1; fi",
+      "echo 'Creating a new image in ${var.gcp_demo_project} from ' $IMAGE_NAME",
+      "gcloud compute images create $IMAGE_NAME --project=${var.gcp_demo_project} --source-image=$IMAGE_NAME --source-image-project=${var.gcp_project_id}"
     ]
   }
 

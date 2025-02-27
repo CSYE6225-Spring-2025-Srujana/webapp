@@ -41,15 +41,6 @@ else
   exit 1
 fi
 
-# Install dependencies
-if command -v npm &> /dev/null; then
-  echo "Installing dependencies..."
-  sudo npm install --silent
-else
-  echo "Error: npm is not installed"
-  exit 1
-fi
-
 # Create the .env file properly
 echo "Creating .env file..."
 cat <<EOF | sudo tee /opt/csye6225/webapp/.env > /dev/null
