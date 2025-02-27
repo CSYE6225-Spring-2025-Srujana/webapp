@@ -282,7 +282,7 @@ build {
   }
 
   post-processor "shell-local" {
-    only = ["source.googlecompute.gcp_image"]
+    only = ["googlecompute.gcp_image"]
     inline = [
       "echo 'Fetching the latest created image...'",
       "IMAGE_NAME=$(gcloud compute images list --filter='name~${var.gcp_image_prefix}-.*' --sort-by=~creationTimestamp --limit=1 --format='value(name)')",
