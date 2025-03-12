@@ -272,8 +272,8 @@ build {
   }
 
   provisioner "shell" {
-    inline = [
-      "echo 'Moving webapp.service to /etc/systemd/system/'",
+              inline = [
+        "echo 'Moving webapp.service to /etc/systemd/system/'",
       "sudo mv /tmp/webapp.service /etc/systemd/system/webapp.service",
       "sudo chmod 644 /etc/systemd/system/webapp.service",
       "sudo systemctl daemon-reload",
