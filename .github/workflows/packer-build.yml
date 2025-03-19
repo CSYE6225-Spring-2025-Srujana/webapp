@@ -102,14 +102,4 @@ jobs:
         id: packer-build
         run: |
           packer init machine-image.pkr.hcl
-          packer build -machine-readable -var-file=packer.auto.pkrvars.hcl machine-image.pkr.hcl 2>&1 | tee output.log | awk '{ print; system(""); }'
-
-          # Extract AWS AMI ID
-          AMI_OUTPUT=$(grep 'amazon-ebs\.ubuntu,artifact,0,id' output.log)
-          echo "Full AMI Output: $AMI_OUTPUT"
-
-          # Extract AMI ID from log
-          AMI_ID=$(echo "$AMI_OUTPUT" | cut -d ',' -f6 | cut -d ':' -f2)
-          echo "Extracted AMI ID: $AMI_ID"
-
-          echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
+          packer build -machine-readable -var-file=packer.auto.pkrvars.hcl machine-image.pkr.hcl
