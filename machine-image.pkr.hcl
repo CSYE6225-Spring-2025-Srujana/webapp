@@ -102,9 +102,9 @@ source "amazon-ebs" "ubuntu" {
     delete_on_termination = var.aws_delete_on_termination
   }
   # Use the default VPC subnet
-  vpc_id    = var.aws_vpc
-  subnet_id = var.aws_subnet
-  ssh_timeout = "20m" 
+  vpc_id      = var.aws_vpc
+  subnet_id   = var.aws_subnet
+  ssh_timeout = "20m"
 }
 
 build {
