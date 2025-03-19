@@ -1,10 +1,15 @@
 const express = require('express')
 const healthRoutes = require('./src/routes/healthRoutes')
+const fileRoutes = require('./src/routes/fileRoutes.js')
 const { sequelize } = require('./src/config/dbConfig')
+const bodyParser = require("body-parser");
 
 const PORT = process.env.PORT || 8080;
 
 const app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
 
 (async () => {
   try {
@@ -21,12 +26,15 @@ const app = express();
     }); 
     console.log('Database bootstrapped and synchronized successfully.');
 
+    console.log(app._router.stack.map(layer => layer.route && layer.route.path).filter(Boolean));
+
   } catch (error) {
     console.error('Failed to bootstrap the database:', error);
   }
 })();
 
 app.use('/healthz', healthRoutes);
+app.use('/v1/file', fileRoutes);
 
 app.all('*', (req, res) => {
   return res.status(404).set({

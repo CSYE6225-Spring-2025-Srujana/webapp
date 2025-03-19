@@ -1,20 +1,23 @@
 [Unit]
 Description=Csye6225 webapp Service
-After=network.target mysql.service
-Requires=mysql.service
-ConditionPathExists=/var/run/mysqld/mysqld.sock
+After=cloud-final.service network.target
+Wants=cloud-final.service
 
 [Service]
+# Ensure cloud-init completes and database is available before starting
+ExecStartPre=/bin/sh -c 'while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo "Waiting for cloud-init..."; sleep 5; done;'
+ExecStartPre=/bin/sh -c 'until [ -f /opt/csye6225/webapp/.env ]; do echo "Waiting for .env file..."; sleep 5; done;'
+ExecStartPre=/bin/sh -c 'until nc -z -v -w30 $DB_HOST 3306; do echo "Waiting for database..."; sleep 5; done;'
+
+# Start the web application
 ExecStart=/usr/bin/env node /opt/csye6225/webapp/app.js
 WorkingDirectory=/opt/csye6225/webapp
 Restart=always
 User=csye6225
 Group=csye6225
+
+# Load environment variables from .env file
 EnvironmentFile=/opt/csye6225/webapp/.env
-ExecStartPre=/bin/sleep 5
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=csye6225-webapp
 
 [Install]
 WantedBy=multi-user.target
