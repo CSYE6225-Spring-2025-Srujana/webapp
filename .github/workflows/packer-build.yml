@@ -83,21 +83,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
-       # Install Google Cloud SDK
-      - name: Install Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          project_id: ${{ vars.GCP_PROJECT_ID }}
-          
-      # Authenticate with Google Cloud using the service account
-      - name: Authenticate with GCP
-        uses : google-github-actions/auth@v2
-        with:
-          credentials_json: '${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}'
-
-      - name: Verify Authentication
-        run: gcloud auth list
-
       - name: Generate Packer Variables File
         run: |
           cat <<EOF > packer.auto.pkrvars.hcl
@@ -111,23 +96,6 @@ jobs:
           source_ami        = "${{ vars.SOURCE_AMI }}"
           aws_vpc           = "${{ vars.AWS_VPC }}"
           aws_subnet        = "${{ vars.AWS_SUBNET }}"
-
-          # Database Variables
-          DB_HOST          = "${{ vars.DB_HOST }}"
-          DB_USER          = "${{ vars.DB_USER }}"
-          DB_PASSWORD      = "${{ secrets.DB_PASSWORD }}"
-          DB_NAME          = "${{ vars.DB_NAME }}"
-          DB_PORT          = "${{ vars.DB_PORT }}"
-          DB_DIALECT       = "${{ vars.DB_DIALECT }}"
-          DB_FORCE_CHANGES = "${{ vars.DB_FORCE_CHANGES }}"
-
-          # GCP Variables
-          gcp_project_id   = "${{ vars.GCP_PROJECT_ID }}"
-          gcp_source_image = "${{ vars.GCP_SOURCE_IMAGE }}"
-          gcp_machine_type = "${{ vars.GCP_MACHINE_TYPE }}"
-          gcp_zone         = "${{ vars.GCP_ZONE }}"
-          gcp_image_prefix = "${{ vars.GCP_IMAGE_PREFIX }}"
-          gcp_demo_project = "${{ vars.GCP_DEMO_PROJECT }}"
           EOF
 
       - name: Run Packer Build
@@ -145,16 +113,3 @@ jobs:
           echo "Extracted AMI ID: $AMI_ID"
 
           echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
-
-      - name: Store AMI ID in AWS SSM Parameter Store
-        run: |
-          if [[ -z "$AMI_ID" ]]; then
-            echo "Error: AMI_ID is empty. Exiting..."
-            exit 1
-          fi
-
-          aws ssm put-parameter --name "/custom-ami/latest" \
-            --type "String" \
-            --value "$AMI_ID" \
-            --region ${{ vars.AWS_REGION }} \
-            --overwrite

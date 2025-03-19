@@ -41,28 +41,14 @@ else
   exit 1
 fi
 
-# Create the .env file properly
-echo "Creating .env file..."
-cat <<EOF | sudo tee /opt/csye6225/webapp/.env > /dev/null
-DB_HOST=${DB_HOST}
-DB_USER=${DB_USER}
-DB_PASSWORD=${DB_PASSWORD}
-DB_NAME=${DB_NAME}
-DB_PORT=${DB_PORT}
-DB_DIALECT=${DB_DIALECT}
-DB_FORCE_CHANGES=${DB_FORCE_CHANGES}
-EOF
-
 # Set ownership and permissions
 echo "Setting ownership and permissions..."
 sudo chown -R csye6225:csye6225 /opt/csye6225/webapp
 sudo chmod -R 750 /opt/csye6225/webapp
-sudo chmod 600 /opt/csye6225/webapp/.env
 
 # Verify permissions
 echo "Permissions set:"
 ls -al /opt/csye6225/webapp
-ls -l /opt/csye6225/webapp/.env
 
 # Restart the application service if it exists
 if systemctl list-units --full -all | grep -q "webapp.service"; then
