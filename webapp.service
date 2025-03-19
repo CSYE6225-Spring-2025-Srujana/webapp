@@ -1,23 +1,20 @@
 [Unit]
 Description=Csye6225 webapp Service
-After=cloud-final.service network.target
-Wants=cloud-final.service
+After=network.target
+Wants=cloud-init.target
 
 [Service]
-# Ensure cloud-init completes and database is available before starting
-ExecStartPre=/bin/sh -c 'while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo "Waiting for cloud-init..."; sleep 5; done;'
-ExecStartPre=/bin/sh -c 'until [ -f /opt/csye6225/webapp/.env ]; do echo "Waiting for .env file..."; sleep 5; done;'
-ExecStartPre=/bin/sh -c 'until nc -z -v -w30 $DB_HOST 3306; do echo "Waiting for database..."; sleep 5; done;'
-
-# Start the web application
-ExecStart=/usr/bin/env node /opt/csye6225/webapp/app.js
-WorkingDirectory=/opt/csye6225/webapp
-Restart=always
 User=csye6225
 Group=csye6225
-
-# Load environment variables from .env file
+Restart=always
+RestartSec=15
+ExecStartPre=/bin/sleep 10
+WorkingDirectory=/opt/csye6225/webapp
 EnvironmentFile=/opt/csye6225/webapp/.env
+ExecStart=/usr/bin/env node /opt/csye6225/webapp/app.js
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=csye6225-webapp
 
 [Install]
 WantedBy=multi-user.target
