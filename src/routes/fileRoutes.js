@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
-const multerS3 = require('multer-s3');
-const { fromIni } = require('@aws-sdk/credential-provider-ini');
+// const multerS3 = require('multer-s3');
+// const { fromIni } = require('@aws-sdk/credential-provider-ini');
 const { File } = require('../models/file'); 
 const { v4: uuidv4 } = require('uuid');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
