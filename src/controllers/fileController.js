@@ -29,7 +29,7 @@ const uploadFile = async (req, res) => {
 
         const fileId = uuidv4();
         const fileExt = req.file.originalname;
-        const fileKey = `uploads/${fileId}${fileExt}`;
+        const fileKey = `${fileId}/${req.file.originalname}`;
 
         // Upload file to S3
         const uploadParams = {
