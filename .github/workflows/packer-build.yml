@@ -94,8 +94,10 @@ jobs:
           instance_type     = "${{ vars.INSTANCE_TYPE }}"
           ami_name_prefix   = "${{ vars.AMI_NAME_PREFIX }}"
           source_ami        = "${{ vars.SOURCE_AMI }}"
-          aws_ami_users     = jsondecode('${{ secrets.AWS_AMI_USERS }}')
+          aws_ami_users     = ${AWS_AMI_USERS}
           EOF
+        env:
+          AWS_AMI_USERS: ${{ secrets.AWS_AMI_USERS }}
 
       - name: Run Packer Build
         id: packer-build
