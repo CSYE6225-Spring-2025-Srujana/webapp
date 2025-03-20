@@ -1,11 +1,11 @@
 const express = require('express');
 const { uploadFile, getFileMetadata, deleteFile, upload, methodNotAllowed } = require('../controllers/fileController');
-
+const fileUploadValidator = require('../middlewares/fileUploadValidator');
 const router = express.Router();
 
 router.route('/')
     .head(methodNotAllowed)
-    .post(upload.single('webapp-file'), uploadFile)
+    .post(fileUploadValidator, uploadFile)
     .get((req, res)=>
         {
         return res.status(400).set({
