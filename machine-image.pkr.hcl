@@ -59,7 +59,8 @@ variable "source_ami" {
 }
 
 variable "aws_ami_users" {
-  type = list(string)
+  type    = list(string)
+  default = []
 }
 
 variable "aws_device_name" {
