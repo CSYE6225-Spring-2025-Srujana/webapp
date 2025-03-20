@@ -21,6 +21,16 @@ variable "ssh_username" {
   default = "t2.micro"
 }
 
+variable "ssh_handshake_attempts" {
+  type    = number
+  default = 20
+}
+
+variable "ssh_timeout" {
+  type    = string
+  default = "30m"
+}
+
 # AWS Variables
 #for local testing
 variable "aws_profile" {
@@ -48,19 +58,8 @@ variable "source_ami" {
   default = "t2.micro"
 }
 
-variable "aws_vpc" {
-  type    = string
-  default = "t2.micro"
-}
-
-variable "aws_subnet" {
-  type    = string
-  default = "t2.micro"
-}
-
 variable "aws_ami_users" {
-  type    = list(string)
-  default = ["794038250804", "796973511897"]
+  type = list(string)
 }
 
 variable "aws_device_name" {
@@ -101,10 +100,9 @@ source "amazon-ebs" "ubuntu" {
     volume_type           = var.aws_volume_type
     delete_on_termination = var.aws_delete_on_termination
   }
-  # Use the default VPC subnet
-  vpc_id      = var.aws_vpc
-  subnet_id   = var.aws_subnet
-  ssh_timeout = "20m"
+
+  ssh_timeout            = var.ssh_timeout
+  ssh_handshake_attempts = var.ssh_handshake_attempts
 }
 
 build {
@@ -126,7 +124,7 @@ build {
   provisioner "shell" {
     inline = [
       "sudo apt update",
-      "sudo apt install -y unzip nodejs npm netcat-openbsd"
+      "sudo apt install -y unzip nodejs npm mysql-client"
     ]
   }
 

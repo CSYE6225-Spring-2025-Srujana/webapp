@@ -2,17 +2,10 @@ const { File } = require('../models/file');
 const { v4: uuidv4 } = require('uuid');
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const multer = require('multer');
-const { fromIni } = require('@aws-sdk/credential-provider-ini');
 
-// Only for local
 const s3 = new S3Client({
-    region: process.env.AWS_REGION,
-    credentials: fromIni({ profile: 'dev' })
+    region: process.env.AWS_REGION
 });
-
-// const s3 = new S3Client({
-//     region: process.env.AWS_REGION
-// });
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -28,7 +21,6 @@ const uploadFile = async (req, res) => {
         }
 
         const fileId = uuidv4();
-        const fileExt = req.file.originalname;
         const fileKey = `${fileId}/${req.file.originalname}`;
 
         // Upload file to S3
@@ -39,23 +31,22 @@ const uploadFile = async (req, res) => {
             ContentType: req.file.mimetype
         };
 
-        await s3.send(new PutObjectCommand(uploadParams));
-
         // Construct metadata
         const fileMetadata = {
             id: fileId,
             file_name: req.file.originalname,
-            url: `${process.env.S3_BUCKET_NAME}/${fileKey}`,
-            upload_date: new Date()
+            url: `${process.env.S3_BUCKET_NAME}/${fileKey}`
         };
 
         // Save metadata in DB
-        await File.create(fileMetadata);
+        const result = await File.create(fileMetadata);
 
-        return res.status(201).json(fileMetadata);
+        await s3.send(new PutObjectCommand(uploadParams));
+
+        return res.status(201).json(result);
     } catch (error) {
         console.error('File upload error:', error);
-        return res.status(400).set({
+        return res.status(503).set({ 
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             Pragma: 'no-cache',
             'X-Content-Type-Options': 'nosniff',
@@ -65,6 +56,7 @@ const uploadFile = async (req, res) => {
 
 const getFileMetadata = async (req, res) => {
     try {
+        
         const file = await File.findByPk(req.params.id);
 
         if (!file) {
@@ -79,7 +71,7 @@ const getFileMetadata = async (req, res) => {
         return res.status(200).json(file);
     } catch (error) {
         console.error('Error fetching file metadata:', error);
-        return res.status(404).set({
+        return res.status(503).set({
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             Pragma: 'no-cache',
             'X-Content-Type-Options': 'nosniff',
@@ -120,7 +112,7 @@ const deleteFile = async (req, res) => {
         }).end();  
     } catch (error) {
         console.error('File delete error:', error);
-        return res.status(400).set({
+        return res.status(503).set({
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             Pragma: 'no-cache',
             'X-Content-Type-Options': 'nosniff',
@@ -129,7 +121,7 @@ const deleteFile = async (req, res) => {
 };
 
 /**
- * Handles unsupported methods for /files routes
+ * Handles unsupported methods for /file routes
  */
 const methodNotAllowed = (req, res) => {
     return res.status(405).set({

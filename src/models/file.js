@@ -16,11 +16,12 @@ const File = sequelize.define('File', {
     allowNull: false,
   },
   upload_date: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
+    type: DataTypes.STRING, 
+    allowNull: false,
+    defaultValue: () => new Date().toISOString().split('T')[0] 
   }
 }, {
-  timestamps: false, // We already have upload_date, no need for Sequelize's timestamps
+  timestamps: false, 
 });
 
 module.exports = { File };
