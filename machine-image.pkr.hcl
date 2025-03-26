@@ -23,12 +23,12 @@ variable "ssh_username" {
 
 variable "ssh_handshake_attempts" {
   type    = number
-  default = 20
+  default = 100
 }
 
 variable "ssh_timeout" {
   type    = string
-  default = "30m"
+  default = "60m"
 }
 
 # AWS Variables
@@ -55,7 +55,7 @@ variable "instance_type" {
 
 variable "source_ami" {
   type    = string
-  default = "t2.micro"
+  default = "ami-04b4f1a9cf54c11d0"
 }
 
 variable "aws_ami_users" {
@@ -132,11 +132,22 @@ build {
   provisioner "file" {
     source      = "${var.project_path}"
     destination = "/tmp/webapp.zip"
+    timeout     = "30m"
   }
 
   provisioner "file" {
     source      = "deploy_webapp.sh"
     destination = "/tmp/deploy_webapp.sh"
+  }
+
+  provisioner "file" {
+    source      = "cloudwatch-config.json"
+    destination = "/tmp/cloudwatch-config.json"
+  }
+
+  provisioner "file" {
+    source      = "installCloudWatchAgent.sh"
+    destination = "/tmp/installCloudWatchAgent.sh"
   }
 
   # Move and set permissions for scripts
@@ -145,7 +156,16 @@ build {
       "sudo mv /tmp/deploy_webapp.sh /opt/csye6225/deploy_webapp.sh",
       "sudo chown csye6225:csye6225 /opt/csye6225/deploy_webapp.sh",
       "sudo chmod 755 /opt/csye6225/deploy_webapp.sh",
-      "sudo -E bash /opt/csye6225/deploy_webapp.sh"
+      "sudo mv /tmp/installCloudWatchAgent.sh /opt/csye6225/installCloudWatchAgent.sh",
+      "sudo chown csye6225:csye6225 /opt/csye6225/installCloudWatchAgent.sh",
+      "sudo chmod 755 /opt/csye6225/installCloudWatchAgent.sh"
+    ]
+  }
+
+  provisioner "shell" {
+    inline = [
+      "sudo -E bash /opt/csye6225/deploy_webapp.sh",
+      "sudo -E bash /opt/csye6225/installCloudWatchAgent.sh"
     ]
   }
 
