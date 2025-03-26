@@ -19,8 +19,8 @@ const logger = winston.createLogger({
     ),
     transports: [
         new winston.transports.Console(),  // Logs to the console
-        // new winston.transports.File({ filename: '/home/ubuntu/webapp/logs/webapp.log' }) // Logs to a file
-        new winston.transports.File({ filename: '/opt/csye6225/logs/webapp.log' }) 
+        // new winston.transports.File({ filename: 'logs/webapp.log' }) // Logs to a file
+        new winston.transports.File({ filename: '/opt/csye6225/webapp/logs/webapp.log' }) 
     ],
 });
 
