@@ -12,7 +12,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const uploadFile = async (req, res) => {
     const apiStartTime = Date.now();
-    const apiName = req.method + req.originalUrl;
+    const apiName = req.method + req.baseUrl;
 
     try {
         if (!req.file) {
@@ -73,7 +73,7 @@ const uploadFile = async (req, res) => {
 const getFileMetadata = async (req, res) => {
     try {
         const apiStartTime = Date.now();
-        const apiName = req.method + " " + req.originalUrl;
+        const apiName = req.method + req.baseUrl;
 
         const dbStartTime = Date.now();
         const file = await File.findByPk(req.params.id);
@@ -107,7 +107,7 @@ const getFileMetadata = async (req, res) => {
 const deleteFile = async (req, res) => {
     try {
         const apiStartTime = Date.now();
-        const apiName = req.method + " " + req.originalUrl;
+        const apiName = req.method + req.baseUrl;
 
         const dbStartTime = Date.now();
         const file = await File.findByPk(req.params.id);
@@ -131,9 +131,9 @@ const deleteFile = async (req, res) => {
             Key: fileKey
         };
 
-        const s3StartTime = Date.now();
+        const s3StartTime2 = Date.now();
         await s3.send(new DeleteObjectCommand(deleteParams));
-        logS3Call(apiName, Date.now() - s3StartTime);
+        logS3Call(apiName, Date.now() - s3StartTime2);
 
         // Remove metadata from DB
         dbStartTime = Date.now();
