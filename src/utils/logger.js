@@ -31,13 +31,13 @@ function logApiCall(apiName, duration) {
 }
 
 // Log database query metrics
-function logDbQuery(duration) {
-    statsd.timing('db.query.timing', duration);
+function logDbQuery(apiName, duration) {
+    statsd.timing(`db.query.timing.${apiName}`, duration);
 }
 
 // Log S3 service call metrics
-function logS3Call(duration) {
-    statsd.timing('s3.call.timing', duration);
+function logS3Call(apiName, duration) {
+    statsd.timing(`s3.call.timing.${apiName}`, duration);
 }
 
 module.exports = { logger, logApiCall, logDbQuery, logS3Call };

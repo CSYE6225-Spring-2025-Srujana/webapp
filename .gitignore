@@ -133,4 +133,4 @@ dist
 # packer var file
 *.pkrvars.hcl
 
-.DS_Store
+*.DS_Store
