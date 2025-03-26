@@ -3,6 +3,30 @@
 ## Overview
 - The health check API allows us to monitor the health of the application instance and alert us when something is not working as expected.
 - The health check API prevents us from sending traffic to unhealthy application instances and automatically replace/repair them. It also helps us improve user experience by not routing their quests to unhealthy instances.
+- File API allows us to upload and delete a file to s3 bucket in AWS and also store, get and delete file's metadata in RDS.
+  
+### **Web Application Updates**
+- **Observability**:  
+  - Logs: Application log data is stored in Amazon CloudWatch.  
+  - Metrics: CloudWatch collects metrics for API usage, including the number of calls and response times.  
+
+- **Custom Metrics**:  
+  - **API Call Count**: Tracks the frequency of API calls.  
+  - **API Response Time**: Measures the time taken (ms) to process each API call.  
+  - **Database Query Time**: Records the execution time (ms) of database queries.  
+  - **S3 Operation Time**: Tracks the duration (ms) of calls to AWS S3.  
+  
+- **API Features**:  
+  - All request/response payloads are JSON.  
+  - Proper HTTP status codes are returned for all operations.  
+
+- **Image Management**:  
+  - Can upload files in formats like PNG, JPG, and JPEG.  
+  - Files are stored in an S3 bucket, with metadata saved in the database.  
+  - Can delete files; they are removed from both S3 and the database.  
+
+- **S3 Security**:  
+  - S3 credentials are securely managed via IAM roles attached to EC2 instances.
   
 ## Prerequisites
 Before you begin, ensure you have the following installed:
@@ -11,7 +35,9 @@ Before you begin, ensure you have the following installed:
 3. **npm** (Node package manager, usually included with Node.js)
 4. **Git** (for version control)
 5. **Packer** (for Custom AMI build)
-6. **AWS-SDK** (for AWS SDK)
+6. **Terraform** (IaaC - infra setup)
+7. **AWS-SDK** (for AWS SDK)
+8. **Winston Logger** (Cloud Watch)
 
 ## Getting Started
 
