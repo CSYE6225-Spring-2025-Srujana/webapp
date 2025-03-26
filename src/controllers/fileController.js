@@ -57,12 +57,12 @@ const uploadFile = async (req, res) => {
         logS3Call(s3Duration);
 
         logger.info(`File uploaded successfully: ${fileMetadata.file_name}`);
-
         logApiCall(apiName , Date.now() - apiStartTime);
 
         return res.status(201).json(result);
     } catch (error) {
         logger.error('File upload error:', error);
+        logApiCall(apiName, Date.now() - startTime);
         return res.status(503).set({ 
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             Pragma: 'no-cache',
@@ -73,11 +73,18 @@ const uploadFile = async (req, res) => {
 
 const getFileMetadata = async (req, res) => {
     try {
-        
+        const apiStartTime = Date.now();
+        const apiName = req.originalUrl;
+
+        const dbStartTime = Date.now();
         const file = await File.findByPk(req.params.id);
+        const dbDuration = Date.now() - dbStartTime;
+        logDbQuery(dbDuration);
+        
 
         if (!file) {
             logger.error('File not found');
+            logApiCall(apiName , Date.now() - apiStartTime);
             return res.status(404).set({
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 Pragma: 'no-cache',
@@ -85,9 +92,12 @@ const getFileMetadata = async (req, res) => {
             }).end();  
         }
 
+        logger.info(`Fetching file data`);
+        logApiCall(apiName , Date.now() - apiStartTime);
         return res.status(200).json(file);
     } catch (error) {
         logger.error('Error fetching file metadata:', error);
+        logApiCall(apiName, Date.now() - startTime);
         return res.status(503).set({
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             Pragma: 'no-cache',
@@ -98,10 +108,17 @@ const getFileMetadata = async (req, res) => {
 
 const deleteFile = async (req, res) => {
     try {
+        const apiStartTime = Date.now();
+        const apiName = req.originalUrl;
+
+        const dbStartTime = Date.now();
         const file = await File.findByPk(req.params.id);
+        const dbDuration = Date.now() - dbStartTime;
+        logDbQuery(dbDuration);
 
         if (!file) {
             logger.error('File not found');
+            logApiCall(apiName , Date.now() - apiStartTime);
             return res.status(404).set({
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 Pragma: 'no-cache',
@@ -117,13 +134,19 @@ const deleteFile = async (req, res) => {
             Key: fileKey
         };
 
+        const s3StartTime = Date.now();
         await s3.send(new DeleteObjectCommand(deleteParams));
+        const s3Duration = Date.now() - s3StartTime;
+        logS3Call(s3Duration);
 
         // Remove metadata from DB
+        dbStartTime = Date.now();
         await file.destroy();
+        dbDuration = Date.now() - dbStartTime;
+        logDbQuery(dbDuration);
 
         logger.info(`File deleted successfully: ${fileKey}`);
-
+        logApiCall(apiName , Date.now() - apiStartTime);
         return res.status(204).set({
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             Pragma: 'no-cache',
@@ -131,6 +154,7 @@ const deleteFile = async (req, res) => {
         }).end();  
     } catch (error) {
         logger.error('File delete error:', error);
+        logApiCall(apiName, Date.now() - startTime);
         return res.status(503).set({
             'Cache-Control': 'no-cache, no-store, must-revalidate',
             Pragma: 'no-cache',
