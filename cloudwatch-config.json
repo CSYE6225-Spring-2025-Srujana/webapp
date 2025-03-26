@@ -1,0 +1,28 @@
+{
+    "metrics": {
+        "append_dimensions": {
+            "InstanceId": "${aws:InstanceId}"
+        },
+        "metrics_collected": {
+            "statsd": {
+                "service_address": "127.0.0.1:8125",
+                "metrics_collection_interval": 10
+            }
+        }
+    },
+    "logs": {
+        "logs_collected": {
+            "files": {
+                "collect_list": [
+                    {
+                        "file_path": "/opt/csye6225/webapp/logs/webapp.log",
+                        "log_group_name": "webapp-logs",
+                        "log_stream_name": "{instance_id}-app",
+                        "timestamp_format": "%Y-%m-%d %H:%M:%S",
+                        "timezone": "UTC"
+                    }
+                ]
+            }
+        }
+    }
+}
