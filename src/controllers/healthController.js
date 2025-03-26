@@ -4,7 +4,8 @@ const { logger, logApiCall, logDbQuery } = require('../utils/logger');
 
 const performHealthCheck = async (req, res) => {
   const startTime = Date.now();
-  const apiName = req.method + req.originalUrl;
+  const apiName = req.method + req.baseUrl;
+
   try {
     if(req.method ==='HEAD'){
         logger.error('Health check failed: Does not support HEAD API call');
