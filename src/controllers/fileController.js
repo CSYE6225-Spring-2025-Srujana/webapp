@@ -131,14 +131,14 @@ const deleteFile = async (req, res) => {
             Key: fileKey
         };
 
-        const s3StartTime2 = Date.now();
+        const s3StartTime = Date.now();
         await s3.send(new DeleteObjectCommand(deleteParams));
-        logS3Call(apiName, Date.now() - s3StartTime2);
+        logS3Call(apiName, Date.now() - s3StartTime);
 
         // Remove metadata from DB
-        dbStartTime = Date.now();
+        const dbStartTime2 = Date.now();
         await file.destroy();
-        logDbQuery(apiName, Date.now() - dbStartTime);
+        logDbQuery(apiName, Date.now() - dbStartTime2);
 
         logger.info(`File deleted successfully: ${fileKey}`);
         logApiCall(apiName , Date.now() - apiStartTime);
