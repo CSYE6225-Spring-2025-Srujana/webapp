@@ -104,3 +104,70 @@ jobs:
         run: |
           packer init machine-image.pkr.hcl
           packer build -var-file=packer.auto.pkrvars.hcl machine-image.pkr.hcl
+           
+      - name: Fetch Latest AMI ID from Packer Manifest
+        id: fetch-ami-id
+        run: |
+          if [[ -f manifest.json ]]; then
+            AMI_ID=$(jq -r '.builds[-1].artifact_id | split(":")[1]' manifest.json || echo "null")
+            if [[ "$AMI_ID" == "null" ]]; then
+              echo "Failed to parse AMI ID from manifest.json"
+              exit 1
+            fi
+            echo "ami=$AMI_ID" >> $GITHUB_OUTPUT
+          else
+            echo "manifest.json file not found"
+            exit 1
+          fi
+  update_launch_template_demo:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    name: Update Launch Template for Demo & Trigger Instance Refresh 
+    steps:
+      - name: Configure AWS Credentials for Demo
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEMO }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEMO }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Update Launch Template with latest AMI ID
+        run: |
+          AMI_ID=${{ needs.build.outputs.ami_id }}
+          echo "Updating Launch Template with the new AMI ID"
+          aws ec2 create-launch-template-version \
+            --launch-template-data "{\"ImageId\":\"$AMI_ID\"}" \
+            --source-version 1 \
+            --launch-template-name ${{ vars.LAUNCH_TEMPLATE_NAME }} \
+            --no-cli-pager
+
+      - name: Instance Refresh for Auto Scaling Group
+        run: |
+          echo "Triggering instance refresh for Auto Scaling Group"
+          aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name ${{ vars.AUTO_SCALING_GROUP_NAME }} \
+            --strategy Rolling \
+            --no-cli-pager
+          echo "Instance refresh initiated"
+
+      - name: Check Instance Refresh Status
+        run: |
+          REFRESH_STATUS="Pending"
+          while [ "$REFRESH_STATUS" != "Successful" ] && [ "$REFRESH_STATUS" != "Failed" ] && [ "$REFRESH_STATUS" != "Cancelled" ]; do
+            REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${{ vars.AUTO_SCALING_GROUP_NAME }} --query 'InstanceRefreshes[0].Status' --output text)
+            echo "Instance Refresh Status: $REFRESH_STATUS"
+            sleep 30
+          done
+          if [ "$REFRESH_STATUS" == "Successful" ]; then
+            echo "Instance refresh completed successfully."
+            exit 0
+          elif [ "$REFRESH_STATUS" == "Failed" ]; then
+            echo "Instance refresh failed."
+            exit 1
+          elif [ "$REFRESH_STATUS" == "Cancelled" ]; then
+            echo "Instance refresh cancelled."
+            exit 1
+          else
+            echo "Unexpected exit: $REFRESH_STATUS"
+            exit 1
+          fi
