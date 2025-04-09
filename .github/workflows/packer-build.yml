@@ -8,6 +8,8 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    outputs:
+      ami_id: ${{ steps.fetch-ami-id.outputs.ami }}
     permissions:
       id-token: write
       contents: read
