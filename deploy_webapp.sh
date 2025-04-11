@@ -16,6 +16,27 @@ else
   exit 1
 fi
 
+# Install jq (for parsing JSON)
+if ! command -v jq &> /dev/null; then
+  echo "Installing jq..."
+  sudo apt-get update -y
+  sudo apt-get install -y jq
+else
+  echo "jq is already installed."
+fi
+
+# Install AWS CLI v2
+if ! command -v aws &> /dev/null; then
+  echo "Installing AWS CLI..."
+  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  unzip awscliv2.zip
+  sudo ./aws/install
+  rm -rf aws awscliv2.zip
+else
+  echo "AWS CLI is already installed."
+fi
+
+
 # Ensure unzip is installed
 if ! command -v unzip &> /dev/null; then
   echo "Installing unzip..."
