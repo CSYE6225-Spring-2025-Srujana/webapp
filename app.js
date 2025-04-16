@@ -29,6 +29,7 @@ const app = express();
   }
 })();
 
+app.use('/cicd', healthRoutes);
 app.use('/healthz', healthRoutes);
 app.use('/v1/file', fileRoutes);
 
